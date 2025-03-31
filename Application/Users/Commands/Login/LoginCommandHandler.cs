@@ -24,7 +24,7 @@ namespace Application.Users.Commands.Login
             var validationResult = validator.Validate(request);
             if (!validationResult.IsValid)
             {
-                return ControllerResultBuilder.Reject<TokenResponseDto>(string.Join(", ", validationResult.Errors.Select(x => x.ErrorMessage)) + ".");
+                return ControllerResultBuilder.Reject<TokenResponseDto>(string.Join("\n", validationResult.Errors.Select(x => x.ErrorMessage)));
             }
 
             var user = await context.Users.FirstOrDefaultAsync(x => x.Email == request.Email);

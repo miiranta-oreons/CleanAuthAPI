@@ -1,8 +1,9 @@
-﻿using Domain.Enums;
+﻿using Domain.Constants;
+using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities;
 
-public class User
+public class User : IdentityUser
 {
 
     // Not "useful" stuff
@@ -14,15 +15,11 @@ public class User
 
     // "Useful" stuff
 
-    public Guid Id { get; set; }
+    public required string Email { get; set; } // Still useful with identity?
 
-    public required string Email { get; set; }
+    public required string PasswordHash { get; set; } // Still useful with identity?
 
-    public required string PasswordHash { get; set; }
-
-    public List<EntityRole> Roles { get; set; } = new List<EntityRole>() { 
-        new EntityRole { Name = RoleType.Default }
-    };
+    public List<EntityRole> Roles { get; set; } = new List<EntityRole>();
 
     public string? RefreshToken { get; set; }
 

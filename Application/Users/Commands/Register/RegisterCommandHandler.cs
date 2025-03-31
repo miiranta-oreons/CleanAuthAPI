@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.Users.Commands.Common;
 using Domain.Constants;
 using Domain.Entities;
 using FluentValidation;
@@ -21,7 +22,7 @@ namespace Application.Users.Commands.Register
             var validationResult = validator.Validate(request);
             if (!validationResult.IsValid)
             {
-                return ControllerResultBuilder.Reject<User>(string.Join(",\n", validationResult.Errors.Select(x => x.ErrorMessage)) + ".");
+                return ControllerResultBuilder.Reject<User>(string.Join("\n", validationResult.Errors.Select(x => x.ErrorMessage)));
             }
 
             if (await context.Users.AnyAsync(x => x.Email == request.Email))
@@ -31,16 +32,17 @@ namespace Application.Users.Commands.Register
 
             var user = new User()
             {
-                Email = string.Empty,
-                PasswordHash = string.Empty
+                Email = request.Email,
+                UserName = request.Email.Split('@')[0].Trim().ToLower(),
+                PasswordHash = string.Empty,
+                //
+                Name = request.Name,
+                Age = request.Age
             };
+            user.Roles.Add(new EntityRole { Name = RoleTypes.Default });
 
             var hashedPassword = new PasswordHasher<User>()
            .HashPassword(user, request.Password);
-
-            user.Name = request.Name;
-            user.Age = request.Age;
-            user.Email = request.Email;
             user.PasswordHash = hashedPassword;
 
             context.Users.Add(user);

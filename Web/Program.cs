@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddInfrastructureServices();
@@ -7,6 +11,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policyBuilder =>
+    {
+        var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(",");
+        if (allowedOrigins is null) return;
+
+        policyBuilder.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins(allowedOrigins);
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -15,10 +32,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => { });
 
     app.UseDeveloperExceptionPage();
+    app.UseMigrationsEndPoint();
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
