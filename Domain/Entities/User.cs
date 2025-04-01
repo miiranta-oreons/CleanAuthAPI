@@ -1,5 +1,4 @@
-﻿using Domain.Constants;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities;
 
@@ -14,10 +13,6 @@ public class User : IdentityUser
 
 
     // "Useful" stuff
-
-    public required string Email { get; set; } // Still useful with identity?
-
-    public required string PasswordHash { get; set; } // Still useful with identity?
 
     public string? RefreshToken { get; set; }
 

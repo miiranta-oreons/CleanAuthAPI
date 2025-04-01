@@ -4,15 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.EntityFrameworkCore.Migrations;
-
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +22,10 @@ public static class DependencyInjection
 
         // Authentication is added in Application/DependencyInjection.cs
 
+        builder.Services.AddScoped<UserManager<User>>();
+        builder.Services.AddScoped<RoleManager<IdentityRole>>();
     }
+
 }
 
 

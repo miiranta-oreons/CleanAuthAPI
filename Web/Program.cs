@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-using Domain.Constants;
-using System.Reflection;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddInfrastructureServices();
@@ -41,26 +37,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+await app.AddPostBuildApplicationConfigurationAsync();
+
 app.MapControllers();
-
-// Create Roles from Role Manager from domain constants
-// Should this be in Application?
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = typeof(RoleTypes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-        .Where(x => x.IsLiteral && !x.IsInitOnly)
-        .Select(x => x.GetRawConstantValue()?.ToString())
-        .Where(x => !string.IsNullOrEmpty(x))
-        .ToList();
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role!))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role!));
-        }
-    }
-}
 
 app.Run();

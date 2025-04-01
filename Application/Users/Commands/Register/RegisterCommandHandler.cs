@@ -1,12 +1,9 @@
 ﻿using Application.Common;
-using Application.Users.Commands.Common;
 using Domain.Constants;
 using Domain.Entities;
 using FluentValidation;
-using Infrastructure.Data;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands.Register
 {
@@ -25,7 +22,7 @@ namespace Application.Users.Commands.Register
                 return ControllerResultBuilder.Reject<User>(string.Join("\n", validationResult.Errors.Select(x => x.ErrorMessage)));
             }
 
-            if (await userManager.FindByNameAsync(request.Email) is not null)
+            if (await userManager.FindByEmailAsync(request.Email) is not null)
             {
                 return ControllerResultBuilder.Reject<User>(ErrorMessages.UserAlreadyExists);
             }
@@ -33,7 +30,7 @@ namespace Application.Users.Commands.Register
             var user = new User()
             {
                 Email = request.Email,
-                UserName = request.Email.Split('@')[0].Trim().ToLower(),
+                UserName = request.Email,
                 PasswordHash = string.Empty,
                 Name = request.Name,
                 Age = request.Age

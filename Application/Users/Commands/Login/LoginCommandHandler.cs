@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Application.Common;
+﻿using Application.Common;
 using Application.Services.TokenService;
 using Application.Users.Commands.Common;
 using Domain.Constants;
 using Domain.Entities;
 using FluentValidation;
-using Infrastructure.Data;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

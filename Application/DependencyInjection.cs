@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 using System.Text;
 using Application.Services.TokenService;
-using Domain.Entities;
+using Domain.Constants;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -48,8 +48,27 @@ public static class DependencyInjection
         // Should that be here?
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-        builder.Services.AddScoped<UserManager<User>>();
-        builder.Services.AddScoped<RoleManager<IdentityRole>>();
+    }
 
+    public static async Task AddPostBuildApplicationConfigurationAsync(this IApplicationBuilder app)
+    {
+        
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roles = typeof(RoleTypes).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                .Where(x => x.IsLiteral && !x.IsInitOnly)
+                .Select(x => x.GetRawConstantValue()?.ToString())
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList();
+
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role!))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role!));
+                }
+            }
+        }
     }
 }
