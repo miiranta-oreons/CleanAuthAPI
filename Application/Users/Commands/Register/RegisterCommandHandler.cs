@@ -56,11 +56,11 @@ namespace Application.Users.Commands.Register
             }
 
             // Testing admin role
-            var adminRoleAdded = await userManager.AddToRoleAsync(user: user, role: RoleTypes.Admin);
-            if (!adminRoleAdded.Succeeded)
-            {
-                return ControllerResultBuilder.Reject<User>(ErrorMessages.InternalServerError);
-            }
+            //var adminRoleAdded = await userManager.AddToRoleAsync(user: user, role: RoleTypes.Admin);
+            //if (!adminRoleAdded.Succeeded)
+            //{
+            //    return ControllerResultBuilder.Reject<User>(ErrorMessages.InternalServerError);
+            //}
 
             return ControllerResultBuilder.Resolve(user);
         }

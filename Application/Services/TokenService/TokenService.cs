@@ -5,14 +5,13 @@ using System.Text;
 using Application.Users.Commands.Common;
 using Application.Users.Commands.RefreshTokens;
 using Domain.Entities;
-using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Services.TokenService
 {
-    public class TokenService(AppDbContext context, UserManager<User> userManager, IConfiguration configuration) : ITokenService
+    public class TokenService(UserManager<User> userManager, IConfiguration configuration) : ITokenService
     {
 
         private async Task<string> CreateTokenAsync(User user)
@@ -57,13 +56,15 @@ namespace Application.Services.TokenService
             var refreshToken = CreateRefreshToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiration = DateTime.UtcNow.AddDays(7);
-            await context.SaveChangesAsync();
+
+            await userManager.UpdateAsync(user);
+
             return refreshToken;
         }
 
         private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
         {
-            var user = await context.Users.FindAsync(userId);
+            var user = await userManager.FindByIdAsync(userId.ToString());
             if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiration < DateTime.UtcNow)
             {
                 return null;
