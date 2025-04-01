@@ -6,25 +6,27 @@ using Application.Users.Commands.Common;
 using Application.Users.Commands.RefreshTokens;
 using Domain.Entities;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Services.TokenService
 {
-    public class TokenService(AppDbContext context, IConfiguration configuration) : ITokenService
+    public class TokenService(AppDbContext context, UserManager<User> userManager, IConfiguration configuration) : ITokenService
     {
- 
-        private string CreateToken(User user)
+
+        private async Task<string> CreateTokenAsync(User user)
         {
             var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, user.Email),
-                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-                        };
-
-            foreach (var role in user.Roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role.Name.ToString()));
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var userRoles = await userManager.GetRolesAsync(user);
+            foreach (var userRole in userRoles)
+            {
+               claims.Add(new Claim(ClaimTypes.Role, userRole));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("TokenSettings:Token")));
@@ -84,7 +86,7 @@ namespace Application.Services.TokenService
         {
             return new TokenResponseDto()
             {
-                AccessToken = CreateToken(user),
+                AccessToken = await CreateTokenAsync(user),
                 RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
             };
         }

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands.Register
 {
-    class RegisterCommandHandler(AppDbContext context, IValidator<RegisterCommand> validator) : IRequestHandler<RegisterCommand, ControllerResult<User>>
+    class RegisterCommandHandler(UserManager<User> userManager, IValidator<RegisterCommand> validator) : IRequestHandler<RegisterCommand, ControllerResult<User>>
     {
         public async Task<ControllerResult<User>> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
@@ -25,7 +25,7 @@ namespace Application.Users.Commands.Register
                 return ControllerResultBuilder.Reject<User>(string.Join("\n", validationResult.Errors.Select(x => x.ErrorMessage)));
             }
 
-            if (await context.Users.AnyAsync(x => x.Email == request.Email))
+            if (await userManager.FindByNameAsync(request.Email) is not null)
             {
                 return ControllerResultBuilder.Reject<User>(ErrorMessages.UserAlreadyExists);
             }
@@ -35,18 +35,32 @@ namespace Application.Users.Commands.Register
                 Email = request.Email,
                 UserName = request.Email.Split('@')[0].Trim().ToLower(),
                 PasswordHash = string.Empty,
-                //
                 Name = request.Name,
                 Age = request.Age
             };
-            user.Roles.Add(new EntityRole { Name = RoleTypes.Default });
 
             var hashedPassword = new PasswordHasher<User>()
-           .HashPassword(user, request.Password);
+                .HashPassword(user, request.Password);
             user.PasswordHash = hashedPassword;
 
-            context.Users.Add(user);
-            await context.SaveChangesAsync();
+            var userCreated = await userManager.CreateAsync(user);
+            if (!userCreated.Succeeded)
+            {
+                return ControllerResultBuilder.Reject<User>(ErrorMessages.InternalServerError);
+            }
+
+            var defaultRoleAdded = await userManager.AddToRoleAsync(user: user, role: RoleTypes.Default);
+            if (!defaultRoleAdded.Succeeded)
+            {
+                return ControllerResultBuilder.Reject<User>(ErrorMessages.InternalServerError);
+            }
+
+            // Testing admin role
+            var adminRoleAdded = await userManager.AddToRoleAsync(user: user, role: RoleTypes.Admin);
+            if (!adminRoleAdded.Succeeded)
+            {
+                return ControllerResultBuilder.Reject<User>(ErrorMessages.InternalServerError);
+            }
 
             return ControllerResultBuilder.Resolve(user);
         }

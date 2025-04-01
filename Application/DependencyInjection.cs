@@ -1,9 +1,11 @@
 ﻿using System.Reflection;
 using System.Text;
 using Application.Services.TokenService;
+using Domain.Entities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
@@ -45,6 +47,9 @@ public static class DependencyInjection
 
         // Should that be here?
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-    }
 
+        builder.Services.AddScoped<UserManager<User>>();
+        builder.Services.AddScoped<RoleManager<IdentityRole>>();
+
+    }
 }

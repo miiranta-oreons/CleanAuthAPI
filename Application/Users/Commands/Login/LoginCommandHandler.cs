@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands.Login
 {
-    class LoginCommandHandler(ITokenService tokenService, AppDbContext context, IValidator<LoginCommand> validator) : IRequestHandler<LoginCommand, ControllerResult<TokenResponseDto>>
+    class LoginCommandHandler(ITokenService tokenService, IValidator<LoginCommand> validator, UserManager<User> userManager) : IRequestHandler<LoginCommand, ControllerResult<TokenResponseDto>>
     {
         public async Task<ControllerResult<TokenResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -27,7 +27,7 @@ namespace Application.Users.Commands.Login
                 return ControllerResultBuilder.Reject<TokenResponseDto>(string.Join("\n", validationResult.Errors.Select(x => x.ErrorMessage)));
             }
 
-            var user = await context.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            var user = await userManager.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
 
             if (user is null)
             {

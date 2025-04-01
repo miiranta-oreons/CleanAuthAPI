@@ -19,8 +19,6 @@ public class User : IdentityUser
 
     public required string PasswordHash { get; set; } // Still useful with identity?
 
-    public List<EntityRole> Roles { get; set; } = new List<EntityRole>();
-
     public string? RefreshToken { get; set; }
 
     public DateTime? RefreshTokenExpiration { get; set; }
